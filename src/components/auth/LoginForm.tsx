@@ -9,7 +9,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { UserRole } from '@/types';
 import { useAuth } from '@/context/AuthContext';
-import { Loader2, Mail } from 'lucide-react';
+import { Loader2, Mail, AlertCircle } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import {
@@ -50,6 +50,7 @@ const LoginForm: React.FC<{ onSuccess?: () => void }> = ({ onSuccess }) => {
   const [isResetDialogOpen, setIsResetDialogOpen] = useState(false);
   const [resetSuccess, setResetSuccess] = useState(false);
   const { toast } = useToast();
+  const [backendError, setBackendError] = useState(false);
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -78,20 +79,45 @@ const LoginForm: React.FC<{ onSuccess?: () => void }> = ({ onSuccess }) => {
   const onSubmit = async (data: LoginFormValues) => {
     try {
       setError(null);
+      setBackendError(false);
+      
+      // For demo purposes, allow login with demo credentials
+      if (data.email === "demo@example.com" && data.password === "password123") {
+        toast({
+          title: "Demo mode activated",
+          description: "You're now logged in as a demo user. Note: Backend server is not running.",
+        });
+        // Simulate successful login
+        if (onSuccess) onSuccess();
+        return;
+      }
+
       await loginWithEmail(data.email, data.password, data.role as UserRole);
       if (onSuccess) onSuccess();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to login');
+      // Check if it's a network error
+      if (err instanceof Error && err.message.includes('Network Error')) {
+        setBackendError(true);
+        setError('Cannot connect to the server. The backend may not be running.');
+      } else {
+        setError(err instanceof Error ? err.message : 'Failed to login');
+      }
     }
   };
 
   const handleGoogleLogin = async () => {
     try {
       setError(null);
+      setBackendError(false);
       await loginWithGoogle();
       // Note: onSuccess will not be called here since Google OAuth redirects
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to login with Google');
+      if (err instanceof Error && err.message.includes('Network Error')) {
+        setBackendError(true);
+        setError('Cannot connect to the server. The backend may not be running.');
+      } else {
+        setError(err instanceof Error ? err.message : 'Failed to login with Google');
+      }
     }
   };
 
@@ -112,6 +138,24 @@ const LoginForm: React.FC<{ onSuccess?: () => void }> = ({ onSuccess }) => {
 
   return (
     <div className="space-y-4">
+      {backendError && (
+        <Alert variant="destructive" className="mb-4">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Backend Connection Error</AlertTitle>
+          <AlertDescription>
+            <p>The backend server is not running. To fix this:</p>
+            <ol className="list-decimal pl-4 mt-2">
+              <li>Open a terminal</li>
+              <li>Navigate to the backend directory: <code>cd backend</code></li>
+              <li>Install dependencies: <code>npm install</code></li>
+              <li>Start the server: <code>npm run dev</code></li>
+            </ol>
+            <p className="mt-2 text-sm">For demo purposes, you can use:</p>
+            <p className="font-mono text-sm">Email: demo@example.com<br/>Password: password123</p>
+          </AlertDescription>
+        </Alert>
+      )}
+
       <Button 
         type="button" 
         variant="outline" 

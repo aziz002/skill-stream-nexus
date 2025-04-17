@@ -1,6 +1,8 @@
+
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import { User, Profile, UserRole } from '@/types';
 import { signIn, signOut, getCurrentUser } from '@/api/auth';
+import { toast } from '@/components/ui/use-toast';
 
 interface AuthContextType {
   user: User | null;
@@ -30,6 +32,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       try {
         const token = localStorage.getItem('supabase.auth.token');
         if (token) {
+          // Check if we have a demo user in localStorage
+          const demoUser = localStorage.getItem('demo_user');
+          if (demoUser) {
+            const userData = JSON.parse(demoUser);
+            setUser(userData);
+            setProfile(userData);
+            return;
+          }
+          
           const userData = await getCurrentUser();
           if (userData) {
             setUser({
@@ -65,6 +76,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       setIsLoading(true);
       setError(null);
+
+      // For demo purposes when backend is not available
+      if (email === "demo@example.com" && password === "password123") {
+        const demoUser = createDemoUser();
+        setUser(demoUser);
+        setProfile(demoUser);
+        localStorage.setItem('supabase.auth.token', 'demo_token');
+        localStorage.setItem('demo_user', JSON.stringify(demoUser));
+        toast({
+          title: "Demo login successful",
+          description: "You're now using the app with a demo account",
+        });
+        return;
+      }
+
       const { user: userData, session } = await signIn({ email, password });
       
       if (userData) {
@@ -88,6 +114,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch (error) {
       console.error('Login error:', error);
       setError('Invalid email or password');
+      throw error;
     } finally {
       setIsLoading(false);
     }
@@ -95,6 +122,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const logout = async () => {
     try {
+      // Check if it's a demo user
+      if (localStorage.getItem('demo_user')) {
+        localStorage.removeItem('demo_user');
+        localStorage.removeItem('supabase.auth.token');
+        setUser(null);
+        setProfile(null);
+        return;
+      }
+      
       await signOut();
       setUser(null);
       setProfile(null);
@@ -107,6 +143,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       setIsLoading(true);
       setError(null);
+      
+      // For demo purposes when backend is not available
+      if (email === "demo@example.com" && password === "password123") {
+        const demoUser = createDemoUser(role);
+        setUser(demoUser);
+        setProfile(demoUser);
+        localStorage.setItem('supabase.auth.token', 'demo_token');
+        localStorage.setItem('demo_user', JSON.stringify(demoUser));
+        toast({
+          title: "Demo login successful",
+          description: "You're now using the app with a demo account",
+        });
+        return;
+      }
+      
       const { user: userData, session } = await signIn({ email, password });
       
       if (userData) {
@@ -130,6 +181,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch (error) {
       console.error('Login error:', error);
       setError('Invalid email or password');
+      throw error;
     } finally {
       setIsLoading(false);
     }
@@ -139,10 +191,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       setIsLoading(true);
       setError(null);
-      console.log('Google login initiated');
+      
+      // In demo mode, create a demo Google user
+      const demoGoogleUser = createDemoUser('freelancer', true);
+      setUser(demoGoogleUser);
+      setProfile(demoGoogleUser);
+      localStorage.setItem('supabase.auth.token', 'demo_google_token');
+      localStorage.setItem('demo_user', JSON.stringify(demoGoogleUser));
+      
+      toast({
+        title: "Demo Google login",
+        description: "You're signed in with a simulated Google account",
+      });
     } catch (error) {
       console.error('Google login error:', error);
       setError('Failed to login with Google');
+      throw error;
     } finally {
       setIsLoading(false);
     }
@@ -150,7 +214,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const resetPassword = async (email: string) => {
     try {
-      console.log('Password reset initiated for:', email);
+      // Just simulate success in demo mode
+      toast({
+        title: "Password reset email sent",
+        description: "Check your inbox for the reset link (demo mode)",
+      });
       return Promise.resolve();
     } catch (error) {
       console.error('Password reset error:', error);
@@ -160,11 +228,42 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const registerWithEmail = async (name: string, email: string, password: string, role: UserRole) => {
     try {
-      console.log('User registration initiated:', { name, email, role });
+      setIsLoading(true);
+      
+      // Create a new demo user for registration
+      const demoUser = {
+        id: `demo-${Date.now()}`,
+        name,
+        email,
+        role,
+        profilePicture: null,
+        bio: '',
+        skills: [],
+        createdAt: new Date().toISOString(),
+        coverPicture: null,
+        verified: false,
+        availableUntil: null,
+        rating: 0,
+        totalRatings: 0
+      };
+      
+      localStorage.setItem('supabase.auth.token', 'demo_registration_token');
+      localStorage.setItem('demo_user', JSON.stringify(demoUser));
+      
+      setUser(demoUser);
+      setProfile(demoUser);
+      
+      toast({
+        title: "Registration successful",
+        description: "Your account has been created (demo mode)",
+      });
+      
       return Promise.resolve();
     } catch (error) {
       console.error('Registration error:', error);
       throw new Error('Failed to register user');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -183,6 +282,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           availableUntil: updatedProfile.available_until,
           totalRatings: updatedProfile.total_ratings,
         } : null);
+        
+        // Update demo user in localStorage if it exists
+        const demoUser = localStorage.getItem('demo_user');
+        if (demoUser) {
+          const parsedUser = JSON.parse(demoUser);
+          localStorage.setItem('demo_user', JSON.stringify({
+            ...parsedUser,
+            ...data
+          }));
+        }
+        
+        toast({
+          title: "Profile updated",
+          description: "Your profile has been successfully updated",
+        });
       }
       
       return Promise.resolve();
@@ -190,6 +304,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       console.error('Profile update error:', error);
       throw new Error('Failed to update profile');
     }
+  };
+
+  // Helper function to create a demo user
+  const createDemoUser = (role: UserRole = 'freelancer', isGoogle = false) => {
+    return {
+      id: 'demo-user-id',
+      name: isGoogle ? 'Google Demo User' : 'Demo User',
+      email: 'demo@example.com',
+      role: role,
+      profilePicture: null,
+      bio: 'This is a demo user account for testing purposes.',
+      skills: ['JavaScript', 'React', 'Node.js'],
+      createdAt: new Date().toISOString(),
+      coverPicture: null,
+      verified: isGoogle,
+      availableUntil: null,
+      rating: 4.5,
+      totalRatings: 10
+    };
   };
 
   const value = {
