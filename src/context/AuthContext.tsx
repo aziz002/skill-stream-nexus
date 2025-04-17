@@ -37,7 +37,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           if (demoUser) {
             const userData = JSON.parse(demoUser);
             setUser(userData);
-            setProfile(userData);
+            setProfile({
+              id: userData.id,
+              name: userData.name,
+              email: userData.email,
+              role: userData.role,
+              profile_picture: userData.profilePicture,
+              bio: userData.bio,
+              skills: userData.skills,
+              created_at: userData.createdAt,
+              cover_picture: userData.coverPicture,
+              verified: userData.verified,
+              available_until: userData.availableUntil,
+              rating: userData.rating,
+              total_ratings: userData.totalRatings,
+            });
             return;
           }
           
@@ -81,7 +95,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (email === "demo@example.com" && password === "password123") {
         const demoUser = createDemoUser();
         setUser(demoUser);
-        setProfile(demoUser);
+        setProfile({
+          id: demoUser.id,
+          name: demoUser.name,
+          email: demoUser.email,
+          role: demoUser.role,
+          profile_picture: demoUser.profilePicture,
+          bio: demoUser.bio,
+          skills: demoUser.skills,
+          created_at: demoUser.createdAt,
+          cover_picture: demoUser.coverPicture,
+          verified: demoUser.verified,
+          available_until: demoUser.availableUntil,
+          rating: demoUser.rating,
+          total_ratings: demoUser.totalRatings,
+        });
         localStorage.setItem('supabase.auth.token', 'demo_token');
         localStorage.setItem('demo_user', JSON.stringify(demoUser));
         toast({
@@ -148,7 +176,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (email === "demo@example.com" && password === "password123") {
         const demoUser = createDemoUser(role);
         setUser(demoUser);
-        setProfile(demoUser);
+        setProfile({
+          id: demoUser.id,
+          name: demoUser.name,
+          email: demoUser.email,
+          role: demoUser.role,
+          profile_picture: demoUser.profilePicture,
+          bio: demoUser.bio,
+          skills: demoUser.skills,
+          created_at: demoUser.createdAt,
+          cover_picture: demoUser.coverPicture,
+          verified: demoUser.verified,
+          available_until: demoUser.availableUntil,
+          rating: demoUser.rating,
+          total_ratings: demoUser.totalRatings,
+        });
         localStorage.setItem('supabase.auth.token', 'demo_token');
         localStorage.setItem('demo_user', JSON.stringify(demoUser));
         toast({
@@ -195,7 +237,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // In demo mode, create a demo Google user
       const demoGoogleUser = createDemoUser('freelancer', true);
       setUser(demoGoogleUser);
-      setProfile(demoGoogleUser);
+      setProfile({
+        id: demoGoogleUser.id,
+        name: demoGoogleUser.name,
+        email: demoGoogleUser.email,
+        role: demoGoogleUser.role,
+        profile_picture: demoGoogleUser.profilePicture,
+        bio: demoGoogleUser.bio,
+        skills: demoGoogleUser.skills,
+        created_at: demoGoogleUser.createdAt,
+        cover_picture: demoGoogleUser.coverPicture,
+        verified: demoGoogleUser.verified,
+        available_until: demoGoogleUser.availableUntil,
+        rating: demoGoogleUser.rating,
+        total_ratings: demoGoogleUser.totalRatings,
+      });
       localStorage.setItem('supabase.auth.token', 'demo_google_token');
       localStorage.setItem('demo_user', JSON.stringify(demoGoogleUser));
       
@@ -251,7 +307,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       localStorage.setItem('demo_user', JSON.stringify(demoUser));
       
       setUser(demoUser);
-      setProfile(demoUser);
+      setProfile({
+        id: demoUser.id,
+        name: demoUser.name,
+        email: demoUser.email,
+        role: demoUser.role,
+        profile_picture: demoUser.profilePicture,
+        bio: demoUser.bio,
+        skills: demoUser.skills,
+        created_at: demoUser.createdAt,
+        cover_picture: demoUser.coverPicture,
+        verified: demoUser.verified,
+        available_until: demoUser.availableUntil,
+        rating: demoUser.rating,
+        total_ratings: demoUser.totalRatings,
+      });
       
       toast({
         title: "Registration successful",
